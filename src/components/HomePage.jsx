@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import BookPage from './BookPage';
 
 const HomePage = () => {
     const [documents, setDocuments] = useState([]);
@@ -35,6 +36,7 @@ const HomePage = () => {
         if(query === '') {
             alert("검색어를 입력하세요.");
         } else {
+            setPage(1);
             callAPI();
         }
     };
@@ -61,8 +63,8 @@ const HomePage = () => {
                 {documents.map(doc =>
                     <Col lg={2} md={3} xs={6} className='mb-2'>
                         <Card>
-                            <Card.Body>
-                                <img src={doc.thumbnail} width="100%"/>
+                            <Card.Body>                            
+                                <BookPage book={doc}/>
                             </Card.Body>
                             <Card.Footer>
                                 <div className='text-truncate'>{doc.title}</div>
@@ -74,7 +76,7 @@ const HomePage = () => {
             </Row>
             <div className='text-center mt-3'>
                 <Button onClick={() => setPage(page - 1)} disabled={page === 1}>이전</Button>
-                <span className='mx-3'>{page}</span>
+                <span className='mx-3'>{page} / {last}</span>
                 <Button onClick={() => setPage(page + 1)} disabled={page === last}>다음</Button>
             </div>
         </div>
