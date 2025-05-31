@@ -34,7 +34,12 @@ const LoginPage = () => {
                 sessionStorage.setItem('uid', success.user.uid);
                 setLoading(false);
                 alert('로그인 성공');
-                navi('/');
+
+                if(sessionStorage.getItem('target')) {
+                    navi(sessionStorage.getItem('target'));
+                } else {
+                    navi('/');
+                }      
             })
             .catch(error => {
                 setLoading(false);

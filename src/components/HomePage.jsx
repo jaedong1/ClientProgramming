@@ -4,13 +4,16 @@ import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import BookPage from './BookPage';
 import { BsCart2 } from 'react-icons/bs';
 import { app } from '../firebase'
-import { getDatabase, ref, get, set } from 'firebase/database'
+import { getDatabase, ref, get, set, onValue, remove } from 'firebase/database'
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import { FaHeart } from "react-icons/fa6";
+import { FaRegHeart } from "react-icons/fa6";
 
 const HomePage = () => {
     const navi = useNavigate();
     const db = getDatabase(app);
+    const [heart, setHeart] = useState([]);
     const [loading, setLoading] = useState(false);
     const uid = sessionStorage.getItem('uid');
     const [documents, setDocuments] = useState([]);
@@ -67,6 +70,37 @@ const HomePage = () => {
         }
     }
 
+    const onClickHeart = (book) => {
+        remove(ref(db, `heart/${uid}/${book.isbn}`));
+        alert('즐겨찾기가 취소되었습니다.')
+    }
+
+    const onClickRegHeart = (book) => {
+        if(uid) {
+            set(ref(db, `heart/${uid}/${book.isbn}`), book);
+            alert('즐겨찾기에 등록되었습니다.');
+        } else {
+            navi('/login');
+        }
+    }
+
+    const checkHeart = () => {
+        setLoading(true);
+        onValue(ref(db, `heart/${uid}`), snapshot => {
+            const rows = [];
+            snapshot.forEach(row => {
+                rows.push(row.val().isbn);
+            });
+
+            setHeart(rows);
+            setLoading(false);
+        });
+    }
+
+    useEffect(() => {
+        checkHeart();
+    }, []);
+
     if(loading) return <h1 className='my-5 text-center'>Loading...</h1>
 
     return (
@@ -89,10 +123,17 @@ const HomePage = () => {
             </Row>
             <Row>
                 {documents.map(doc =>
-                    <Col lg={2} md={3} xs={6} className='mb-2'>
+                    <Col lg={2} md={3} xs={6} className='mb-2' key={doc.isbn}>
                         <Card>
                             <Card.Body>                            
                                 <BookPage book={doc}/>
+                                <div className='heart text-end'>
+                                    {heart.includes(doc.isbn) ? 
+                                        <FaHeart onClick={() => onClickHeart(doc)}/>
+                                        :
+                                        <FaRegHeart onClick={() => onClickRegHeart(doc)}/>
+                                    }
+                                </div>
                             </Card.Body>
                             <Card.Footer>
                                 <div className='text-truncate'>{doc.title}</div>
